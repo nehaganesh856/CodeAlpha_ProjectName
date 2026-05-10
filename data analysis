@@ -1,0 +1,128 @@
+# =========================
+# EXPLORATORY DATA ANALYSIS (EDA)
+# =========================
+
+import pandas as pd
+import numpy as np
+import matplotlib.pyplot as plt
+import seaborn as sns
+
+# Load dataset
+df =sns.load_dataset("tips")  # Change to your file path
+
+# -------------------------
+# 1. Ask meaningful questions (printed as guide)
+# -------------------------
+print("\n--- Key Questions ---")
+print("1. What are the key variables?")
+print("2. What is the target variable (if any)?")
+print("3. Are there missing values?")
+print("4. Are there outliers?")
+print("5. What relationships exist between variables?\n")
+
+# -------------------------
+# 2. Explore data structure
+# -------------------------
+print("\n--- Basic Info ---")
+print(df.info())
+
+print("\n--- First 5 Rows ---")
+print(df.head())
+
+print("\n--- Data Types ---")
+print(df.dtypes)
+
+print("\n--- Shape of Dataset ---")
+print(df.shape)
+
+# -------------------------
+# 3. Summary statistics
+# -------------------------
+print("\n--- Statistical Summary ---")
+print(df.describe())
+
+# -------------------------
+# 4. Missing values
+# -------------------------
+print("\n--- Missing Values ---")
+missing = df.isnull().sum()
+print(missing[missing > 0])
+
+plt.figure()
+sns.heatmap(df.isnull(), cbar=False)
+plt.title("Missing Values Heatmap")
+plt.show()
+
+# -------------------------
+# 5. Identify numerical & categorical columns
+# -------------------------
+num_cols = df.select_dtypes(include=np.number).columns
+cat_cols = df.select_dtypes(exclude=np.number).columns
+
+print("\nNumerical Columns:", list(num_cols))
+print("Categorical Columns:", list(cat_cols))
+
+# -------------------------
+# 6. Trends & distributions
+# -------------------------
+for col in num_cols:
+    plt.figure()
+    sns.histplot(df[col], kde=True)
+    plt.title(f"Distribution of {col}")
+    plt.show()
+
+# -------------------------
+# 7. Outlier detection
+# -------------------------
+for col in num_cols:
+    plt.figure()
+    sns.boxplot(x=df[col])
+    plt.title(f"Outliers in {col}")
+    plt.show()
+
+# -------------------------
+# 8. Correlation analysis
+# -------------------------
+plt.figure(figsize=(10, 6))
+corr = df[num_cols].corr()
+sns.heatmap(corr, annot=True, cmap="coolwarm")
+plt.title("Correlation Matrix")
+plt.show()
+
+# -------------------------
+# 9. Categorical analysis
+# -------------------------
+for col in cat_cols:
+    plt.figure()
+    df[col].value_counts().plot(kind='bar')
+    plt.title(f"Category Counts: {col}")
+    plt.xticks(rotation=45)
+    plt.show()
+
+# -------------------------
+# 10. Hypothesis testing example (correlation significance)
+# -------------------------
+from scipy.stats import pearsonr
+
+print("\n--- Hypothesis Testing (Correlation) ---")
+for i in range(len(num_cols)):
+    for j in range(i+1, len(num_cols)):
+        col1, col2 = num_cols[i], num_cols[j]
+        corr_val, p_val = pearsonr(df[col1].dropna(), df[col2].dropna())
+        print(f"{col1} vs {col2} -> Correlation: {corr_val:.2f}, p-value: {p_val:.4f}")
+
+# -------------------------
+# 11. Detect anomalies
+# -------------------------
+print("\n--- Potential Anomalies (Z-score method) ---")
+from scipy.stats import zscore
+
+z_scores = np.abs(zscore(df[num_cols].dropna()))
+anomalies = (z_scores > 3)
+print("Rows with anomalies:", np.where(anomalies)[0])
+
+# -------------------------
+# 12. Final observations placeholder
+# -------------------------
+print("\n--- EDA Complete ---")
+print("Review plots and outputs to identify patterns, trends, and issues.") 
